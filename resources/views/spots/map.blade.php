@@ -435,23 +435,36 @@
             spots.forEach(function(spot) {
                 if (spot.location && spot.location.includes(",")) {
                     var myGridArray = spot.location.split(",").map(Number);
+
+                    // Določi ikono glede na tip spota
+                    var icon = null;
+                    if (spot.type === "portable") {
+                        icon = customIcon_portable;
+                    } else if (spot.type === "mobile") {
+                        icon = customIcon_mobile;
+                    } else if (spot.type === "qth") {
+                        icon = customIcon_qth;
+                    } else {
+                        icon = customIcon_drugo;  // Default icon for other types
+                    }
+
                     if (!isNaN(myGridArray[0]) && !isNaN(myGridArray[1])) {
                         L.marker(myGridArray, {
                             title: spot.activation_callsign,
-                            icon: icon
+                            icon: icon  // Uporabi izbrano ikono
                         })
                             .bindPopup(`
-                                <span class="popup">
-                                    <b>Activator:</b> ${spot.activation_callsign}<br>
-                                    <b>Spotted by:</b> ${spot.spotter_id}<br>
-                                    <b>Frequency:</b> ${spot.frequency}<br>
-                                    <b>Mode:</b> ${spot.mode}<br>
-                                    <b>Time:</b> ${spot.time}<br>
-                                    <b>Type:</b> ${spot.type}<br>
-                                    <b>Comments:</b> ${spot.comments}<br>
-                                    <b>Spotted at:</b> ${spot.created_at}<br>
-                                </span>
-                            `)
+                    <span class="popup">
+                        <b>Activator:</b> ${spot.activation_callsign}<br>
+                        <b>Spotted by:</b> ${spot.spotter_id}<br>
+                        <b>Frequency:</b> ${spot.frequency}<br>
+                        <b>Mode:</b> ${spot.mode}<br>
+                        <b>Time:</b> ${spot.time}<br>
+                        <b>Type:</b> ${spot.type}<br>
+                        <b>Comments:</b> ${spot.comments}<br>
+                        <b>Spotted at:</b> ${spot.created_at}<br>
+                    </span>
+                `)
                             .addTo(map);
                     } else {
                         console.error('Invalid coordinates:', myGridArray);
