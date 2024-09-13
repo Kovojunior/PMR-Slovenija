@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('spot', function (Blueprint $table) {
+        Schema::create('spots', function (Blueprint $table) {
             $table->string("activation_callsign");
             $table->string("spotter_id");
             $table->string("location");
