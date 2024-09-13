@@ -19,14 +19,14 @@
         <div class="container-fluid px-1 py-5 mx-auto">
             <div class="row d-flex justify-content-center">
                 <div class="col-xl-7 col-lg-8 col-md-9 col-11 text-center">
-{{--                    <h3>Request a Demo</h3>--}}
-{{--                    <p class="blue-text">Just answer a few questions<br> so that we can personalize the right experience for you.</p>--}}
-                    <div class="card" style="background-image: url(); background-color: #f3f1f4">
+                    <div class="card" style="background-color: #f3f1f4">
                         <h5 class="text-center mb-4">Submit contact log form</h5>
 
                         {{-- CREATE LOG FORM --}}
                         <form method="POST" action="/listings" class="form-card" enctype="multipart/form-data">
                             @csrf
+                            <!-- Rest of the form content here -->
+
                             {{-- ROW --}}
                             <div class="row justify-content-between text-left">
 
@@ -167,6 +167,7 @@
                                         <span class="text-danger"> *</span>
                                     </label>
                                     <input type="text" id="Freq" name="Freq" placeholder="446.00625/CH1" value="{{old("Freq")}}" onblur="validate(8)">
+                                    <div id="freqError"></div>
                                     {{-- FREQUENCY ERROR DISPLAY --}}
                                     <div class="input-group">
                                         @error("Freq")
@@ -181,13 +182,29 @@
                             {{-- ROW --}}
                             <div class="row justify-content-between text-left">
                                 {{-- UPLOAD A PICTURE FIELD --}}
-                                <div class="form-group col-12 flex-column d-flex">
-                                    <label class="form-control-label px-3">Upload a Picture
-                                    </label>
+                                <div class="form-group col-6 flex-column d-flex">
+                                    <label class="form-control-label px-3"><i class="fa-regular fa-image"></i> Upload a Picture</label>
                                     <input type="file" id="Upload_Pic" name="Upload_Pic">
                                     {{-- UPLOAD PICTURE ERROR DISPLAY --}}
                                     <div class="input-group">
                                         @error("Upload_Pic")
+                                            <p class="text-danger text-sm mt-1">{{$message}}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                {{-- CHOOSE EVENT TYPE FIELD --}}
+                                <div class="form-group col-6 flex-column d-flex mt-1">
+                                    <label class="form-control-label px-3"><i class="fa-solid fa-tag"></i> Choose an Event Type</label>
+                                    <select class="form-select text-primary form-control border border-primary" name="Event_type" id="Event_type" aria-label="Event_type">
+                                        <option value="classic" {{ old('Event_type') == "classic" ? 'selected' : '' }}>Classic</option>
+                                        <option value="simplex_window" {{ old('Event_type') == "simplex_window" ? 'selected' : '' }}>Simplex Window</option>
+                                        <option value="weekly_net" {{ old('Event_type') == "weekly_net" ? 'selected' : '' }}>Weekly Net</option>
+                                        <option value="sota" {{ old('Event_type') == "sota" ? 'selected' : '' }}>(pmr) SOTA</option>
+                                    </select>
+                                    {{-- EVENT TYPE ERROR DISPLAY --}}
+                                    <div class="input-group">
+                                        @error("Event_type")
                                             <p class="text-danger text-sm mt-1">{{$message}}</p>
                                         @enderror
                                     </div>
@@ -202,7 +219,11 @@
                                 <div class="form-group col-12 flex-column d-flex">
                                     <label class="form-control-label px-3"><i class="fa-solid fa-note-sticky"></i> Additional Notes
                                     </label>
+                                    {{-- Hidden fields --}}
+                                    <input type="hidden" id="QSO_Range" name="QSO_Range" value="">
+                                    <input type="hidden" id="QSO_Type" name="QSO_Type" value="">
                                     <input type="text" id="Notes" name="Notes">
+                                    {{-- !Hidden fields --}}
                                     {{-- ADDITIONAL NOTES ERROR DISPLAY --}}
                                     <div class="input-group">
                                         @error("Notes")
@@ -463,8 +484,6 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map2);
 
-        console.log({{auth()->user()->lat_lng}});
-
         let marker1 = L.marker(defaultLocation, {
             draggable: true,
             icon: customIcon_green
@@ -509,6 +528,115 @@
             $("#Their_Grid").css("border-color", "green");
         });
     });
+
+    document.querySelector('form').addEventListener('submit', function (event) {
+        // Prepreči takojšnjo oddajo obrazca
+        event.preventDefault();
+
+        // Koordinate My_Grid in Their_Grid
+        var myGridCoords = document.getElementById("My_Grid").value.split(","); // Razdeli po vejici
+        var theirGridCoords = document.getElementById("Their_Grid").value.split(",");
+
+        // Izvleči širino in dolžino
+        var myLat = parseFloat(myGridCoords[0].trim());
+        var myLon = parseFloat(myGridCoords[1].trim());
+        var theirLat = parseFloat(theirGridCoords[0].trim());
+        var theirLon = parseFloat(theirGridCoords[1].trim());
+
+        // Preveri, če so koordinate pravilno določene
+        if (isNaN(myLat) || isNaN(myLon) || isNaN(theirLat) || isNaN(theirLon)) {
+            alert("Napaka: Koordinate niso pravilno določene.");
+            return;
+        }
+
+        // Izračunaj razdaljo med točkama
+        var distance = distanceBetweenPoints(myLat, myLon, theirLat, theirLon);
+        var distanceFixed = (distance / 1000).toFixed(3); // Prikaži rezultat s tremi decimalnimi mesti
+
+        // Nastavi vrednost razdalje v skrito polje
+        document.getElementById("QSO_Range").value = distanceFixed;
+
+        // Pridobi tip zveze
+        var freqValue = document.getElementById("Freq").value;
+        var freqField = document.getElementById("Freq");
+        var errorField = document.getElementById("freqError");
+
+        // Resetiraj napako in obrobe polja
+        freqField.style.border = "";
+        errorField.innerHTML = "";
+
+        // Za PMR preveri, če je številka med 1 in 16
+        if (/^\d+$/.test(freqValue) && parseInt(freqValue) >= 1 && parseInt(freqValue) <= 16) {
+            document.getElementById("QSO_Type").value = "PMR446";
+        }
+        // Preveri, če je string v formatu "CB" + številka med 1 in 40
+        else if (/^CB(\d+)$/.test(freqValue)) {
+            var cbChannel = parseInt(freqValue.match(/^CB(\d+)$/)[1]); // Izvleči številko kanala
+            if (cbChannel >= 1 && cbChannel <= 40) {
+                document.getElementById("QSO_Type").value = "CB";
+            } else if (cbChannel > 40) {
+                // Nastavi napako, če je kanal večji od 40
+                document.getElementById("QSO_Type").value = "";
+                errorField.innerHTML = "Izberite veljaven CB kanal '1-40'";
+                errorField.style.color = "red";
+                freqField.style.border = "2px solid red"; // Spremeni obrobo polja v rdečo
+                return false; // Prepreči oddajo obrazca
+            }
+        }
+        // Če ni PMR ali CB, je Ham
+        else {
+            document.getElementById("QSO_Type").value = "Ham";
+        }
+
+        // Pošlji obrazec
+        this.submit();
+    });
+
+
+    // Pretvori stopinje v radiane
+    function degreesToRadians(degrees) {
+        return degrees * Math.PI / 180;
+    }
+
+    // Vincentyjeva formula za izračun razdalje med dvema točkama na Zemlji
+    function distanceBetweenPoints(lat1, lon1, lat2, lon2) {
+        const a = 6378137; // polosem velike osi elipsoida v metrih
+        const f = 1 / 298.257223563; // sploščenje elipsoida
+        const b = (1 - f) * a; // polosem male osi elipsoida v metrih
+
+        const phi1 = degreesToRadians(lat1);
+        const phi2 = degreesToRadians(lat2);
+        const lambda1 = degreesToRadians(lon1);
+        const lambda2 = degreesToRadians(lon2);
+
+        const U1 = Math.atan((1 - f) * Math.tan(phi1));
+        const U2 = Math.atan((1 - f) * Math.tan(phi2));
+        const L = lambda2 - lambda1;
+
+        let lambda = L;
+        var lambda_old, sigma, sin_sigma, cos_sigma, cos2_alpha, cos2_sigma_m;
+        do {
+            lambda_old = lambda;
+            const sin_lambda = Math.sin(lambda);
+            const cos_lambda = Math.cos(lambda);
+            sin_sigma = Math.sqrt(Math.pow(Math.cos(U2) * sin_lambda, 2) + Math.pow(Math.cos(U1) * Math.sin(U2) - Math.sin(U1) * Math.cos(U2) * cos_lambda, 2));
+            cos_sigma = Math.sin(U1) * Math.sin(U2) + Math.cos(U1) * Math.cos(U2) * cos_lambda;
+            sigma = Math.atan2(sin_sigma, cos_sigma);
+            const sin_alpha = Math.cos(U1) * Math.cos(U2) * Math.sin(lambda) / sin_sigma;
+            cos2_alpha = 1 - Math.pow(sin_alpha, 2);
+            cos2_sigma_m = cos_sigma - 2 * Math.sin(U1) * Math.sin(U2) / cos2_alpha;
+            const C = f / 16 * cos2_alpha * (4 + f * (4 - 3 * cos2_alpha));
+            lambda = L + (1 - C) * f * sin_alpha * (sigma + C * sin_sigma * (cos2_sigma_m + C * cos_sigma * (-1 + 2 * Math.pow(cos2_sigma_m, 2))));
+        } while (Math.abs(lambda - lambda_old) > 1e-12);
+
+        const u2 = cos2_alpha * (Math.pow(a, 2) - Math.pow(b, 2)) / Math.pow(b, 2);
+        const A = 1 + u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)));
+        const B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)));
+        const delta_sigma = B * sin_sigma * (cos2_sigma_m + B / 4 * (cos_sigma * (-1 + 2 * Math.pow(cos2_sigma_m, 2)) - B / 6 * cos2_sigma_m * (-3 + 4 * Math.pow(sin_sigma, 2)) * (-3 + 4 * Math.pow(cos2_sigma_m, 2))));
+        const s = b * A * (sigma - delta_sigma);
+
+        return s; // Razdalja v metrih
+    }
 </script>
 
 

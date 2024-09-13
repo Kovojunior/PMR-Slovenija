@@ -41,6 +41,9 @@ return new class extends Migration
             $table->string("Upload_Pic")->nullable();
             $table->longText("Notes")->nullable();
             $table->foreignId("user_id")->constrained()->onDelete("cascade");
+            $table->decimal('QSO_Range', 8, 3);
+            $table->string('Event_type');
+            $table->string('QSO_Type');
             $table->timestamps();
         });
     }

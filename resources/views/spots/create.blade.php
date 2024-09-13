@@ -63,6 +63,14 @@
         .shadow-none {
             box-shadow: none!important;
         }
+        .d-flex.justify-content-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .form-select {
+            width: 48%;
+        }
     </style>
 </head>
 

@@ -165,11 +165,15 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                             <h6 class="mb-0"><i class="fa-solid fa-wave-square mr-2"></i>Channel/Frequency</h6>
-                            <span class="text-secondary">{{$listing->Freq}} MHz</span>
+                            <span class="text-secondary" id="Freq"></span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                             <h6 class="mb-0"><i class="fa-solid fa-ruler mr-2"></i>Contact Distance</h6>
-                            <span class="text-secondary" id="contact-distance"></span>
+                            <span class="text-secondary" id="contact-distance">{{$listing->QSO_Range}} km</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+                            <h6 class="mb-0"><i class="fa-solid fa-tag"></i> Additional information</h6>
+                            <span class="text-secondary">'{{$listing->QSO_Type}}', '{{$listing->Event_type}}'</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                             <h6 class="mb-0"><i class="fa-solid fa-note-sticky mr-2"></i>Notes</h6>
@@ -312,157 +316,113 @@
 </html>
 
 <script>
-    // Coordinates of My_Grid and Their_Grid
-    var myGridCoords = ol.proj.fromLonLat([{{$listing->My_Grid}}].reverse());
-    var theirGridCoords = ol.proj.fromLonLat([{{$listing->Their_Grid}}].reverse());
+    document.addEventListener("DOMContentLoaded", function() {
+        // Coordinates of My_Grid and Their_Grid
+        var myGridCoords = ol.proj.fromLonLat([{{$listing->My_Grid}}].reverse());
+        var theirGridCoords = ol.proj.fromLonLat([{{$listing->Their_Grid}}].reverse());
 
-    // Calculate the extent of the line between My_Grid and Their_Grid
-    var lineExtent = ol.extent.boundingExtent([myGridCoords, theirGridCoords]);
+        // Calculate the extent of the line between My_Grid and Their_Grid
+        var lineExtent = ol.extent.boundingExtent([myGridCoords, theirGridCoords]);
 
-    // Calculate the center point between My_Grid and Their_Grid
-    var centerCoords = [(myGridCoords[0] + theirGridCoords[0]) / 2, (myGridCoords[1] + theirGridCoords[1]) / 2];
+        // Calculate the center point between My_Grid and Their_Grid
+        var centerCoords = [(myGridCoords[0] + theirGridCoords[0]) / 2, (myGridCoords[1] + theirGridCoords[1]) / 2];
 
-    // OpenStreetMap view with center set to the middle point
-    var map = new ol.Map({
-        target: 'map',
-        layers: [
-            new ol.layer.Tile({
-                source: new ol.source.OSM()
+        // OpenStreetMap view with center set to the middle point
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: centerCoords,
+                zoom: 16
             })
-        ],
-        view: new ol.View({
-            center: centerCoords,
-            zoom: 16
-        })
+        });
+
+        // My marker
+        var myMarker = new ol.Feature({
+            geometry: new ol.geom.Point(myGridCoords)
+        });
+
+        // Their marker
+        var theirMarker = new ol.Feature({
+            geometry: new ol.geom.Point(theirGridCoords)
+        });
+
+        // Define icon style for markers, Icon must be in .png format not SVG!
+        // Laravel pravila zahtevajo, da se ikone nahajajo v mapi public images
+        var iconStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+                anchor: [0.5, 1],
+                src: "{{asset("/images/location-dot-solid-green.png")}}",
+                scale: 0.06 // Pomanjšaj ikono
+            })
+        });
+
+        var iconStyle2 = new ol.style.Style({
+            image: new ol.style.Icon({
+                anchor: [0.5, 1],
+                src: "{{asset("/images/location-dot-solid-blue.png")}}",
+                scale: 0.06 // Pomanjšaj ikono
+            })
+        });
+
+
+        // Set icon style for markers
+        myMarker.setStyle(iconStyle);
+        theirMarker.setStyle(iconStyle2);
+
+        // Define line feature between markers
+        var lineFeature = new ol.Feature({
+            geometry: new ol.geom.LineString([myGridCoords, theirGridCoords])
+        });
+
+        // Define line style
+        var lineStyle = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: '#FF0000', // Red color
+                width: 2 // Line width
+            })
+        });
+
+        // Set line style for line feature
+        lineFeature.setStyle(lineStyle);
+
+        // Create vector source and layer for markers and line
+        var vectorSource = new ol.source.Vector({
+            features: [myMarker, theirMarker, lineFeature]
+        });
+
+        var vectorLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        // Add vector layer to map
+        map.addLayer(vectorLayer);
+
+        // Fit the map view to the extent of the line
+        map.getView().fit(lineExtent, { padding: [100, 100, 100, 100], duration: 1000 }); // Padding is optional
+
+
+        // Pridobi tip zveze
+        var freqValue = {{$listing->Freq}};
+
+        // Za PMR preveri, če je številka med 1 in 16
+        if (/^\d+$/.test(freqValue) && parseInt(freqValue) >= 1 && parseInt(freqValue) <= 16) {
+            document.getElementById("Freq").innerText = "PMR".concat(" CH", freqValue);
+        }
+        // Preveri, če je string v formatu "CB" + številka med 1 in 40
+        else if (/^CB(\d+)$/.test(freqValue)) {
+            var cbChannel = parseInt(freqValue.match(/^CB(\d+)$/)[1]); // Izvleči številko kanala
+            document.getElementById("Freq").innerText = "CB".concat(" CH", freqValue);
+        }
+        // Če ni PMR ali CB, je Ham
+        else {
+            document.getElementById("Freq").innerText = freqValue.concat( "MHz");
+        }
     });
-
-    // My marker
-    var myMarker = new ol.Feature({
-        geometry: new ol.geom.Point(myGridCoords)
-    });
-
-    // Their marker
-    var theirMarker = new ol.Feature({
-        geometry: new ol.geom.Point(theirGridCoords)
-    });
-
-    // Define icon style for markers, Icon must be in .png format not SVG!
-    // Laravel pravila zahtevajo, da se ikone nahajajo v mapi public images
-    var iconStyle = new ol.style.Style({
-        image: new ol.style.Icon({
-            anchor: [0.5, 1],
-            src: "{{asset("/images/location-dot-solid-green.png")}}",
-            scale: 0.06 // Pomanjšaj ikono
-        })
-    });
-
-    var iconStyle2 = new ol.style.Style({
-        image: new ol.style.Icon({
-            anchor: [0.5, 1],
-            src: "{{asset("/images/location-dot-solid-blue.png")}}",
-            scale: 0.06 // Pomanjšaj ikono
-        })
-    });
-
-
-    // Set icon style for markers
-    myMarker.setStyle(iconStyle);
-    theirMarker.setStyle(iconStyle2);
-
-    // Define line feature between markers
-    var lineFeature = new ol.Feature({
-        geometry: new ol.geom.LineString([myGridCoords, theirGridCoords])
-    });
-
-    // Define line style
-    var lineStyle = new ol.style.Style({
-        stroke: new ol.style.Stroke({
-            color: '#FF0000', // Red color
-            width: 2 // Line width
-        })
-    });
-
-    // Set line style for line feature
-    lineFeature.setStyle(lineStyle);
-
-    // Create vector source and layer for markers and line
-    var vectorSource = new ol.source.Vector({
-        features: [myMarker, theirMarker, lineFeature]
-    });
-
-    var vectorLayer = new ol.layer.Vector({
-        source: vectorSource
-    });
-
-    // Add vector layer to map
-    map.addLayer(vectorLayer);
-
-    // Fit the map view to the extent of the line
-    map.getView().fit(lineExtent, { padding: [100, 100, 100, 100], duration: 1000 }); // Padding is optional
-
-
-
-    // Pretvori stopinje v radiane
-    function degreesToRadians(degrees) {
-        return degrees * Math.PI / 180;
-    }
-
-    // Vincentyjeva formula za izračun razdalje med dvema točkama na Zemlji
-    function distanceBetweenPoints(lat1, lon1, lat2, lon2) {
-        const a = 6378137; // polosem velike osi elipsoida v metrih
-        const f = 1 / 298.257223563; // sploščenje elipsoida
-        const b = (1 - f) * a; // polosem male osi elipsoida v metrih
-
-        const phi1 = degreesToRadians(lat1);
-        const phi2 = degreesToRadians(lat2);
-        const lambda1 = degreesToRadians(lon1);
-        const lambda2 = degreesToRadians(lon2);
-
-        const U1 = Math.atan((1 - f) * Math.tan(phi1));
-        const U2 = Math.atan((1 - f) * Math.tan(phi2));
-        const L = lambda2 - lambda1;
-
-        let lambda = L;
-        var lambda_old, sigma, sin_sigma, cos_sigma, cos2_alpha, cos2_sigma_m;
-        do {
-            lambda_old = lambda;
-            const sin_lambda = Math.sin(lambda);
-            const cos_lambda = Math.cos(lambda);
-            sin_sigma = Math.sqrt(Math.pow(Math.cos(U2) * sin_lambda, 2) + Math.pow(Math.cos(U1) * Math.sin(U2) - Math.sin(U1) * Math.cos(U2) * cos_lambda, 2));
-            cos_sigma = Math.sin(U1) * Math.sin(U2) + Math.cos(U1) * Math.cos(U2) * cos_lambda;
-            sigma = Math.atan2(sin_sigma, cos_sigma);
-            const sin_alpha = Math.cos(U1) * Math.cos(U2) * Math.sin(lambda) / sin_sigma;
-            cos2_alpha = 1 - Math.pow(sin_alpha, 2);
-            cos2_sigma_m = cos_sigma - 2 * Math.sin(U1) * Math.sin(U2) / cos2_alpha;
-            const C = f / 16 * cos2_alpha * (4 + f * (4 - 3 * cos2_alpha));
-            lambda = L + (1 - C) * f * sin_alpha * (sigma + C * sin_sigma * (cos2_sigma_m + C * cos_sigma * (-1 + 2 * Math.pow(cos2_sigma_m, 2))));
-        } while (Math.abs(lambda - lambda_old) > 1e-12);
-
-        const u2 = cos2_alpha * (Math.pow(a, 2) - Math.pow(b, 2)) / Math.pow(b, 2);
-        const A = 1 + u2 / 16384 * (4096 + u2 * (-768 + u2 * (320 - 175 * u2)));
-        const B = u2 / 1024 * (256 + u2 * (-128 + u2 * (74 - 47 * u2)));
-        const delta_sigma = B * sin_sigma * (cos2_sigma_m + B / 4 * (cos_sigma * (-1 + 2 * Math.pow(cos2_sigma_m, 2)) - B / 6 * cos2_sigma_m * (-3 + 4 * Math.pow(sin_sigma, 2)) * (-3 + 4 * Math.pow(cos2_sigma_m, 2))));
-        const s = b * A * (sigma - delta_sigma);
-
-        return s; // Razdalja v metrih
-    }
-
-    // Koordinate My_Grid in Their_Grid
-    var myGridCoords = [{{$listing->My_Grid}}];
-    var theirGridCoords = [{{$listing->Their_Grid}}];
-
-    // Izvleči širino in dolžino
-    var myLat = myGridCoords[0];
-    var myLon = myGridCoords[1];
-
-    var theirLat = theirGridCoords[0];
-    var theirLon = theirGridCoords[1];
-
-    // Izračunaj razdaljo med točkama
-    var distance = distanceBetweenPoints(myLat, myLon, theirLat, theirLon);
-    document.getElementById("contact-distance").innerText = (distance / 1000).toFixed(2) + " km"; // Prikaži rezultat z dvema decimalnima mestoma
-    // console.log("Razdalja med točkama {{$listing->My_Grid}} in {{$listing->Their_Grid}} je :", distance / 1000, "km"); // Pretvori metre v kilometre
-
 </script>
 
 

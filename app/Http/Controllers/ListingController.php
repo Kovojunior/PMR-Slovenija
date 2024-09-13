@@ -48,7 +48,7 @@ class ListingController extends Controller
     public function store(Request $request) {
         // po defaultu grejo naložene datoteke na /storage/app/, to lahko nastavljamo v /config/filesystems.php
         // dd($request->file("logo")->store());
-        // dd($request->all()); nam vrne vsa polja iz forme za dodajanje listinga
+        // dd($request->all()); // nam vrne vsa polja iz forme za dodajanje listinga
         $formFields = $request->validate(
             [
 //                "title" => "required",
@@ -66,6 +66,9 @@ class ListingController extends Controller
                 "Their_Grid" => "required",
                 "Date_Time" => "required",
                 "Freq" => "required",
+                "QSO_Range" => "required",
+                "QSO_Type" => "required",
+                "Event_type" => "required",
             ]
         );
 

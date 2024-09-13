@@ -31,11 +31,11 @@ class DatabaseSeeder extends Seeder
 //         ]);
 
         // Kreiraj 10 dummy userjev po funkciji iz datoteke /database/factories/UserFactory.php
-        $users = User::factory(15)->create();
+        $users = User::factory(10)->create();
 
         // Za vsakega uporabnika ustvari listing
         $users->each(function ($user) {
-            Listing::factory(3)->create([
+            Listing::factory(10)->create([
                 'user_id' => $user->id,
             ]);
             Spot::factory(1)->create([
