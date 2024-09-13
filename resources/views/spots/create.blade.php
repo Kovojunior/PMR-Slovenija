@@ -130,6 +130,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                                 <h6 class="ml-2 mb-1"><i class="fa-solid fa-wave-square"></i> Frequency/channel</h6>
                                 <input type="text" id="frequency" name="frequency" class="text-secondary form-control border border-primary" placeholder="446.00625" value="{{old("frequency")}}">
+                                <div id="freqError"></div>
                                 {{-- MY GRID ERROR DISPLAY --}}
                                 <div class="input-group">
                                     @error("frequency")
@@ -258,8 +259,8 @@
         });
 
         // Pridobi tip zveze
-        var freqValue = document.getElementById("Freq").value;
-        var freqField = document.getElementById("Freq");
+        var freqValue = document.getElementById("frequency").value;
+        var freqField = document.getElementById("frequency");
         var errorField = document.getElementById("freqError");
 
         // Resetiraj napako in obrobe polja
