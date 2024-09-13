@@ -273,16 +273,16 @@
                                         <div id="collapseFourMobile" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFourMobile">
                                             <div class="panel-body">
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="today">Today</label>
+                                                    <label><input type="checkbox" name="date[]" value="today" class="format-checkbox">Today</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_week">This week</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_week" class="format-checkbox">This week</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_month">This month</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_month" class="format-checkbox">This month</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_year">This year</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_year" class="format-checkbox">This year</label>
                                                 </div>
                                                 <!-- Checkbox za izbiro datuma -->
                                                 <div class="checkbox">
@@ -424,7 +424,6 @@
         showOnMap(spots);
 
         function showOnMap(spots) {
-            // console.log(spots);
             // Reset zemljevida
             map.eachLayer(function (layer) {
                 if (!!layer.toGeoJSON) {
@@ -436,19 +435,19 @@
                 if (spot.location && spot.location.includes(",")) {
                     var myGridArray = spot.location.split(",").map(Number);
 
-                    // Določi ikono glede na tip spota
-                    var icon = null;
-                    if (spot.type === "portable") {
-                        icon = customIcon_portable;
-                    } else if (spot.type === "mobile") {
-                        icon = customIcon_mobile;
-                    } else if (spot.type === "qth") {
-                        icon = customIcon_qth;
-                    } else {
-                        icon = customIcon_drugo;  // Default icon for other types
-                    }
-
+                    // Preverimo, če sta obe koordinati veljavni številki
                     if (!isNaN(myGridArray[0]) && !isNaN(myGridArray[1])) {
+                        var icon = null;
+                        if (spot.type === "portable") {
+                            icon = customIcon_portable;
+                        } else if (spot.type === "mobile") {
+                            icon = customIcon_mobile;
+                        } else if (spot.type === "qth") {
+                            icon = customIcon_qth;
+                        } else {
+                            icon = customIcon_drugo;  // Default icon for other types
+                        }
+
                         L.marker(myGridArray, {
                             title: spot.activation_callsign,
                             icon: icon  // Uporabi izbrano ikono
@@ -464,8 +463,7 @@
                         <b>Comments:</b> ${spot.comments}<br>
                         <b>Spotted at:</b> ${spot.created_at}<br>
                     </span>
-                `)
-                            .addTo(map);
+                `).addTo(map);
                     } else {
                         console.error('Invalid coordinates:', myGridArray);
                     }
@@ -520,7 +518,7 @@
 
                 // Filtriranje glede na "Date"
                 if (dates.length) {
-                    const spotDate = new Date(spot.Date_Time);
+                    const spotDate = new Date(spot.created_at);
 
                     if (dates.includes('today')) {
                         const today = new Date();

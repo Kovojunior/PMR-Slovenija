@@ -256,6 +256,38 @@
             marker.setLatLng([lat, lng]);
             document.getElementById("location").value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         });
+
+        // Pridobi tip zveze
+        var freqValue = document.getElementById("Freq").value;
+        var freqField = document.getElementById("Freq");
+        var errorField = document.getElementById("freqError");
+
+        // Resetiraj napako in obrobe polja
+        freqField.style.border = "";
+        errorField.innerHTML = "";
+
+        // Za PMR preveri, če je številka med 1 in 16
+        if (/^\d+$/.test(freqValue) && parseInt(freqValue) >= 1 && parseInt(freqValue) <= 16) {
+            document.getElementById("QSO_Type").value = "PMR446";
+        }
+        // Preveri, če je string v formatu "CB" + številka med 1 in 40
+        else if (/^CB(\d+)$/.test(freqValue)) {
+            var cbChannel = parseInt(freqValue.match(/^CB(\d+)$/)[1]); // Izvleči številko kanala
+            if (cbChannel >= 1 && cbChannel <= 40) {
+                document.getElementById("QSO_Type").value = "CB";
+            } else if (cbChannel > 40) {
+                // Nastavi napako, če je kanal večji od 40
+                document.getElementById("QSO_Type").value = "";
+                errorField.innerHTML = "Izberite veljaven CB kanal '1-40'";
+                errorField.style.color = "red";
+                freqField.style.border = "2px solid red"; // Spremeni obrobo polja v rdečo
+                return false; // Prepreči oddajo obrazca
+            }
+        }
+        // Če ni PMR ali CB, je Ham
+        else {
+            document.getElementById("QSO_Type").value = "Ham";
+        }
     });
 </script>
 

@@ -28,6 +28,7 @@ class SpotFactory extends Factory
             "time" => $this->faker->randomElement(['15min', '1h', '1day', 'infinite', 'alert']),
             "type" => $this->faker->randomElement(['portable', 'mobile', 'qth', 'other']),
             "comments" => $this->faker->optional()->text(50),
+            "Qso_type" => $this->faker->randomElement(['PMR446', 'CB', 'Ham']),
         ];
     }
 }

@@ -283,16 +283,16 @@
                                         <div id="collapseFourMobile" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFourMobile">
                                             <div class="panel-body">
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="today">Today</label>
+                                                    <label><input type="checkbox" name="date[]" value="today" class="format-checkbox">Today</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_week">This week</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_week" class="format-checkbox">This week</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_month">This month</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_month" class="format-checkbox">This month</label>
                                                 </div>
                                                 <div class="checkbox">
-                                                    <label><input type="checkbox" name="date[]" value="this_year">This year</label>
+                                                    <label><input type="checkbox" name="date[]" value="this_year" class="format-checkbox">This year</label>
                                                 </div>
                                                 <!-- Checkbox za izbiro datuma -->
                                                 <div class="checkbox">
