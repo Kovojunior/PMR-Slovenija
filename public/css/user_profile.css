@@ -1,0 +1,43 @@
+body {
+    color: #1a202c;
+    text-align: left;
+    background-color: #e2e8f0;
+}
+
+.red-circle-icon div {
+    position: relative;
+}
+
+/* Utripajoči krogi - še dodatno povečani */
+.blinking div::before,
+.blinking div::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 25px;
+    height: 25px;
+    border: 4px solid red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 2s infinite ease-out;
+    opacity: 0;
+}
+
+.blinking div::after {
+    animation-delay: 1s;
+}
+
+/* Animacija še dodatno povečana */
+@keyframes ripple {
+    0% {
+        width: 25px;
+        height: 25px;
+        opacity: 1;
+    }
+    100% {
+        width: 175px;
+        height: 175px;
+        opacity: 0;
+    }
+}

@@ -1,0 +1,46 @@
+/* Poskrbimo, da sidebar in zemljevid stojita eden ob drugem */
+.container-fluid {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 100vh; /* Limit height to 90% of viewport height */
+}
+
+/* Določimo višino zemljevida */
+#map {
+    height: 100%; /* Ensure the map takes the full height of its column */
+    width: 100%;
+}
+
+.filter-menu {
+    width: 100%; /* Ensure the filter menu takes the full width of its column */
+    height: 100%; /* Make filter menu fill its container */
+    overflow-y: auto; /* Add scroll if the content exceeds the height */
+}
+
+.primary {
+    min-height: 75vh;
+}
+
+#date-range-picker {
+    margin-top: 10px;
+}
+
+.filter-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.filter-buttons button {
+    width: 48%;
+}
+
+@media screen and (max-width: 768px) {
+    /* Na manjših zaslonih se elementa postavita eden pod drugim */
+    .container-fluid {
+        flex-direction: column;
+    }
+}

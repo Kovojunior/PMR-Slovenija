@@ -1,0 +1,35 @@
+.red-circle-icon div {
+    position: relative;
+}
+
+.blinking div::before,
+.blinking div::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border: 2px solid red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ripple 2s infinite ease-out;
+    opacity: 0;
+}
+
+.blinking div::after {
+    animation-delay: 1s;
+}
+
+@keyframes ripple {
+    0% {
+        width: 10px;
+        height: 10px;
+        opacity: 1;
+    }
+    100% {
+        width: 40px;
+        height: 40px;
+        opacity: 0;
+    }
+}
